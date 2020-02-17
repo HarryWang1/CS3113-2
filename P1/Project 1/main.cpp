@@ -46,44 +46,6 @@ GLuint LoadTexture(const char* filePath)
 	return textureID;
 }
 
-void Render()
-{
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-
-	modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.5f, 0.0f));
-	program.SetModelMatrix(modelMatrix);
-
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-	glEnableVertexAttribArray(program.texCoordAttribute);
-
-	glBindTexture(GL_TEXTURE_2D, ctgTexture);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	glDisableVertexAttribArray(program.positionAttribute);
-	glDisableVertexAttribArray(program.texCoordAttribute);
-
-
-	SDL_GL_SwapWindow(displayWindow);
-}
-
-void Update()
-{
-	float ticks = (float)SDL_GetTicks() / 1000.0f;
-	float deltaTime = ticks - lastTicks;
-	lastTicks = ticks;
-}
-
-void Initialize()
-{
-	float rotate_z = 0.0f;
-}
-
 int main(int argc, char* argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -128,9 +90,6 @@ int main(int argc, char* argv[])
 				gameIsRunning = false;
 			}
 		}
-
-		Initialize();
-		Update();
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
