@@ -18,9 +18,12 @@ SDL_Window* displayWindow;
 bool gameIsRunning = true;
 
 ShaderProgram program;
+ShaderProgram program2;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix;
+glm::mat4 viewMatrix2, modelMatrix2, projectionMatrix2;
 
 GLuint ctgTexture;
+GLuint diceTexture;
 float lastTicks = 0.0f;
 
 GLuint LoadTexture(const char* filePath)
@@ -60,10 +63,13 @@ int main(int argc, char* argv[])
 	glViewport(0, 0, 640, 640);
 
 	ShaderProgram program;
+	ShaderProgram program2;
 
 	program.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
+	program2.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
 
 	ctgTexture = LoadTexture("ctg.png");
+	diceTexture = LoadTexture("diceRoll.png");
 
 
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -79,6 +85,14 @@ int main(int argc, char* argv[])
 	program.SetProjectionMatrix(projectionMatrix);
 	program.SetViewMatrix(viewMatrix);
 
+	glm::mat4 modelMatrix2 = glm::mat4(1.0f);
+	glm::mat4 viewMatrix2 = glm::mat4(1.0f);
+
+	projectionMatrix2 = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
+
+	program2.SetModelMatrix(modelMatrix2);
+	program2.SetProjectionMatrix(projectionMatrix2);
+	program2.SetViewMatrix(viewMatrix2);
 
 	SDL_Event event;
 	while (gameIsRunning)
@@ -110,6 +124,17 @@ int main(int argc, char* argv[])
 
 		glDisableVertexAttribArray(program.positionAttribute);
 		glDisableVertexAttribArray(program.texCoordAttribute);
+
+
+
+		modelMatrix = glm::mat4(1.0f); 
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 1.0f, 0.0f)); 
+		program2.SetModelMatrix(modelMatrix);
+
+		glVertexAttribPointer(program2.positionAttribute, 2, GL_FLOAT, false, 0, vertices); 
+		glEnableVertexAttribArray(program2.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program2.positionAttribute); 
 
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float deltaTime = ticks - lastTicks;
