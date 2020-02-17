@@ -20,6 +20,9 @@ bool gameIsRunning = true;
 ShaderProgram program;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix;
 
+GLuint ctgTexture;
+float lastTicks = 0.0f;
+
 GLuint LoadTexture(const char* filePath)
 {
 	int w, h, n;
@@ -27,14 +30,14 @@ GLuint LoadTexture(const char* filePath)
 
 	if (image == NULL)
 	{
-		cout << "Unable to load image." << endl;
+		std::cout << "Unable to load image." << std::endl;
 		assert(false);
 	}
 
 	GLuint textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA， GL_UNSIGNED_BYTE, image);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -43,10 +46,48 @@ GLuint LoadTexture(const char* filePath)
 	return textureID;
 }
 
+void Render()
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+
+	modelMatrix = glm::mat4(1.0f);
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.5f, 0.0f));
+	program.SetModelMatrix(modelMatrix);
+
+	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
+	glEnableVertexAttribArray(program.positionAttribute);
+	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+	glEnableVertexAttribArray(program.texCoordAttribute);
+
+	glBindTexture(GL_TEXTURE_2D, ctgTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(program.positionAttribute);
+	glDisableVertexAttribArray(program.texCoordAttribute);
+
+
+	SDL_GL_SwapWindow(displayWindow);
+}
+
+void Update()
+{
+	float ticks = (float)SDL_GetTicks() / 1000.0f;
+	float deltaTime = ticks - lastTicks;
+	lastTicks = ticks;
+}
+
+void Initialize()
+{
+	float rotate_z = 0.0f;
+}
+
 int main(int argc, char* argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("Hello, World!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 640, SDL_WINDOW_OPENGL);
+	displayWindow = SDL_CreateWindow("First Animation", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 640, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 
@@ -54,13 +95,28 @@ int main(int argc, char* argv[])
 	glewInit();
 #endif
 
+	glViewport(0, 0, 640, 640);
+
+	ShaderProgram program;
+
 	program.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
 
-	playerTextureID = LoadTexture("ctg.png");
+	ctgTexture = LoadTexture("ctg.png");
 
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-	glViewport(0, 0, 640, 640);\\
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	float rotate_z = 45.0f;
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	glm::mat4 viewMatrix = glm::mat4(1.0f);
+
+	projectionMatrix = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
+
+	program.SetModelMatrix(modelMatrix);
+	program.SetProjectionMatrix(projectionMatrix);
+	program.SetViewMatrix(viewMatrix);
+
 
 	SDL_Event event;
 	while (gameIsRunning)
@@ -73,8 +129,37 @@ int main(int argc, char* argv[])
 			}
 		}
 
+		Initialize();
+		Update();
+
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+		float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotate_z),
+			glm::vec3(1.0f, 1.0f, 1.0f));
+		program.SetModelMatrix(modelMatrix);
+
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+		glEnableVertexAttribArray(program.texCoordAttribute);
+
+		glBindTexture(GL_TEXTURE_2D, ctgTexture);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glDisableVertexAttribArray(program.positionAttribute);
+		glDisableVertexAttribArray(program.texCoordAttribute);
+
+		float ticks = (float)SDL_GetTicks() / 1000.0f;
+		float deltaTime = ticks - lastTicks;
+		lastTicks = ticks;
+
+		rotate_z += 45.0f * deltaTime;
+
 		SDL_GL_SwapWindow(displayWindow);
+
 	}
 
 	SDL_Quit();
