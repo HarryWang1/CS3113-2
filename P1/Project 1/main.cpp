@@ -18,7 +18,6 @@ SDL_Window* displayWindow;
 bool gameIsRunning = true;
 
 ShaderProgram program;
-ShaderProgram program2;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix;
 glm::mat4 viewMatrix2, modelMatrix2, projectionMatrix2;
 
@@ -49,6 +48,48 @@ GLuint LoadTexture(const char* filePath)
 	return textureID;
 }
 
+/*
+//When models were loaded in Render() it doesn't load so it was moved to the game loop
+void Render()
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
+
+	modelMatrix = glm::mat4(1.0f);
+	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.5f, 0.0f));
+	program.SetModelMatrix(modelMatrix);
+
+	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
+	glEnableVertexAttribArray(program.positionAttribute);
+	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+	glEnableVertexAttribArray(program.texCoordAttribute);
+
+	glBindTexture(GL_TEXTURE_2D, ctgTexture);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(program.positionAttribute);
+	glDisableVertexAttribArray(program.texCoordAttribute);
+
+
+	SDL_GL_SwapWindow(displayWindow);
+}
+
+void Update()
+{
+	float ticks = (float)SDL_GetTicks() / 1000.0f;
+	float deltaTime = ticks - lastTicks;
+	lastTicks = ticks;
+}
+
+void Initialize()
+{
+	float rotate_z = 0.0f;
+}
+
+*/
+
 int main(int argc, char* argv[])
 {
 	SDL_Init(SDL_INIT_VIDEO);
@@ -71,28 +112,30 @@ int main(int argc, char* argv[])
 	ctgTexture = LoadTexture("ctg.png");
 	diceTexture = LoadTexture("diceRoll.png");
 
-
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
 	float rotate_z = 45.0f;
+	float player_x = -1.0f;
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	glm::mat4 viewMatrix = glm::mat4(1.0f);
-
-	projectionMatrix = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
-
-	program.SetModelMatrix(modelMatrix);
-	program.SetProjectionMatrix(projectionMatrix);
-	program.SetViewMatrix(viewMatrix);
+	glm::mat4 modelMatrix = glm::mat4(1.0f);	 
+	glm::mat4 viewMatrix = glm::mat4(1.0f);	
 
 	glm::mat4 modelMatrix2 = glm::mat4(1.0f);
 	glm::mat4 viewMatrix2 = glm::mat4(1.0f);
 
-	projectionMatrix2 = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
+	projectionMatrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -3.75f, 3.75f); 
+	projectionMatrix2 = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -3.75f, 3.75f);
+
+	program.SetModelMatrix(modelMatrix);
+	program.SetProjectionMatrix(projectionMatrix); 
+	program.SetViewMatrix(viewMatrix);
 
 	program2.SetModelMatrix(modelMatrix2);
 	program2.SetProjectionMatrix(projectionMatrix2);
 	program2.SetViewMatrix(viewMatrix2);
+
+	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
+	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 
 	SDL_Event event;
 	while (gameIsRunning)
@@ -105,13 +148,14 @@ int main(int argc, char* argv[])
 			}
 		}
 
+		//Initialize();
+		//Render();
+		//Update();
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-		float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotate_z),
-			glm::vec3(1.0f, 1.0f, 1.0f));
+		//Model 1
+		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotate_z), glm::vec3(1.0f, 1.0f, 1.0f));
 		program.SetModelMatrix(modelMatrix);
 
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
@@ -125,29 +169,32 @@ int main(int argc, char* argv[])
 		glDisableVertexAttribArray(program.positionAttribute);
 		glDisableVertexAttribArray(program.texCoordAttribute);
 
+		//Model 2
 
-
-		modelMatrix = glm::mat4(1.0f); 
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(1.0f, 1.0f, 0.0f)); 
-		program2.SetModelMatrix(modelMatrix);
-
+		modelMatrix2 = glm::translate(modelMatrix2, glm::vec3(player_x, 0.0f, 0.0f)); 
+		program2.SetModelMatrix(modelMatrix2); 
 		glVertexAttribPointer(program2.positionAttribute, 2, GL_FLOAT, false, 0, vertices); 
-		glEnableVertexAttribArray(program2.positionAttribute);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDisableVertexAttribArray(program2.positionAttribute); 
+		glEnableVertexAttribArray(program2.positionAttribute); 
+		glVertexAttribPointer(program2.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
+		glEnableVertexAttribArray(program2.texCoordAttribute);
 
+		glBindTexture(GL_TEXTURE_2D, diceTexture); 
+		glDrawArrays(GL_TRIANGLES, 0, 6); 				
+
+		glDisableVertexAttribArray(program2.positionAttribute); 											
+		glDisableVertexAttribArray(program2.texCoordAttribute); 
+
+		//Tick timer
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float deltaTime = ticks - lastTicks;
 		lastTicks = ticks;
 
-		rotate_z += 45.0f * deltaTime;
+		rotate_z += 45.0f * deltaTime;	//Spinning controller
+		player_x += 1.0f * deltaTime; //X-Movement controller
 
 		SDL_GL_SwapWindow(displayWindow);
-
 	}
 
 	SDL_Quit();
 	return 0;
-
-
 }
