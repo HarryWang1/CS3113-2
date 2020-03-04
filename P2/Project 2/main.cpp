@@ -14,86 +14,26 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+ShaderProgram program;
+glm::mat4 viewMatrix, modelMatrix, projectionMatrix, modelLeftMatrix, modelRightMatrix;
+
+float lastTicks = 0.0f;
+
 SDL_Window* displayWindow;
 bool gameIsRunning = true;
 
-ShaderProgram program;
-glm::mat4 viewMatrix, modelMatrix, projectionMatrix;
-glm::mat4 viewMatrix2, modelMatrix2, projectionMatrix2;
+float leftBarPosY = 0.0f;
+float rightBarPosY = 0.0f;
 
-GLuint ctgTexture;
-GLuint diceTexture;
-float lastTicks = 0.0f;
+float ballPosX = 0.0f;
+float ballPosY = 0.0f;
 
-GLuint LoadTexture(const char* filePath)
-{
-	int w, h, n;
-	unsigned char* image = stbi_load(filePath, &w, &h, &n, STBI_rgb_alpha);
-
-	if (image == NULL)
-	{
-		std::cout << "Unable to load image." << std::endl;
-		assert(false);
-	}
-
-	GLuint textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	stbi_image_free(image);
-	return textureID;
-}
-
-/*
-//When models were loaded in Render() it doesn't load so it was moved to the game loop
-void Render()
-{
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
-
-	modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.5f, 0.0f));
-	program.SetModelMatrix(modelMatrix);
-
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-	glEnableVertexAttribArray(program.texCoordAttribute);
-
-	glBindTexture(GL_TEXTURE_2D, ctgTexture);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	glDisableVertexAttribArray(program.positionAttribute);
-	glDisableVertexAttribArray(program.texCoordAttribute);
+float ballSpeed = 0.00005f;
 
 
-	SDL_GL_SwapWindow(displayWindow);
-}
-
-void Update()
-{
-	float ticks = (float)SDL_GetTicks() / 1000.0f;
-	float deltaTime = ticks - lastTicks;
-	lastTicks = ticks;
-}
-
-void Initialize()
-{
-	float rotate_z = 0.0f;
-}
-
-*/
-
-int main(int argc, char* argv[])
-{
+void Initialize() {
 	SDL_Init(SDL_INIT_VIDEO);
-	displayWindow = SDL_CreateWindow("First Animation", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 640, SDL_WINDOW_OPENGL);
+	displayWindow = SDL_CreateWindow("Pong!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
 	SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
 	SDL_GL_MakeCurrent(displayWindow, context);
 
@@ -101,100 +41,161 @@ int main(int argc, char* argv[])
 	glewInit();
 #endif
 
-	glViewport(0, 0, 640, 640);
+	glViewport(0, 0, 640, 480);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	ShaderProgram program;
-	ShaderProgram program2;
+	program.Load("shaders/vertex.glsl", "shaders/fragment.glsl");
 
-	program.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
-	program2.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
+	viewMatrix = glm::mat4(1.0f);
+	modelMatrix = glm::mat4(1.0f);
+	modelLeftMatrix = glm::mat4(1.0f);
+	modelRightMatrix = glm::mat4(1.0f);
+	projectionMatrix = glm::ortho(-4.0f, 4.0f, -3.75f, 3.75f, -1.0f, 1.0f);
 
-	ctgTexture = LoadTexture("ctg.png");
-	diceTexture = LoadTexture("diceRoll.png");
 
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	program.SetProjectionMatrix(projectionMatrix);
+	program.SetViewMatrix(viewMatrix);
+	program.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
-	float rotate_z = 45.0f;
-	float player_x = -1.0f;
+	glUseProgram(program.programID);
 
-	glm::mat4 modelMatrix = glm::mat4(1.0f);	 
-	glm::mat4 viewMatrix = glm::mat4(1.0f);	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+}
 
-	glm::mat4 modelMatrix2 = glm::mat4(1.0f);
-	glm::mat4 viewMatrix2 = glm::mat4(1.0f);
+/*
+void ProcessInput() {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
+			gameIsRunning = false;
+		}
+	}
+}
 
-	projectionMatrix = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -3.75f, 3.75f); 
-	projectionMatrix2 = glm::ortho(-5.0f, 5.0f, -3.75f, 3.75f, -3.75f, 3.75f);
+void Update() { }
+
+void Render() {
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	float leftBar[] = { 3.5f, -0.5f, 3.4f, 0.5f, 3.5f, 0.5f, 3.4f, 0.5f, 3.5f, -0.5f, 3.4f, -0.5f };
+	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
+	glEnableVertexAttribArray(program.positionAttribute);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
 	program.SetModelMatrix(modelMatrix);
-	program.SetProjectionMatrix(projectionMatrix); 
-	program.SetViewMatrix(viewMatrix);
 
-	program2.SetModelMatrix(modelMatrix2);
-	program2.SetProjectionMatrix(projectionMatrix2);
-	program2.SetViewMatrix(viewMatrix2);
+	float rightBar[] = { -3.5f, -0.5f, -3.4f, 0.5f, -3.5f, 0.5f, -3.4f, 0.5f, -3.5f, -0.5f, -3.4f, -0.5f };
+	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, rightBar);
+	glEnableVertexAttribArray(program.positionAttribute);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
 
-	float vertices[] = { -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5 };
-	float texCoords[] = { 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0 };
 
-	SDL_Event event;
-	while (gameIsRunning)
-	{
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE)
-			{
+	program.SetModelMatrix(modelMatrix);
+
+	float ball[] = { -0.1f, -0.1f, 0.1f, 0.1f, -0.1f, 0.1f, 0.1f, 0.1f, -0.1f, -0.1f, 0.1f, -0.1f };
+	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, ball);
+	glEnableVertexAttribArray(program.positionAttribute);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+
+	glDisableVertexAttribArray(program.positionAttribute);
+
+
+	SDL_GL_SwapWindow(displayWindow);
+}
+
+
+*/
+
+void Shutdown() {
+	SDL_Quit();
+}
+
+int main(int argc, char* argv[]) {
+	Initialize();
+
+	while (gameIsRunning) {
+		//ProcessInput();
+		//Update();
+		//Render();
+
+		SDL_Event event;
+		while (SDL_PollEvent(&event)) {
+			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				gameIsRunning = false;
 			}
 		}
 
-		//Initialize();
-		//Render();
-		//Update();
-
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		//Model 1
-		modelMatrix = glm::rotate(modelMatrix, glm::radians(rotate_z), glm::vec3(1.0f, 1.0f, 1.0f));
-		program.SetModelMatrix(modelMatrix);
-
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, vertices);
-		glEnableVertexAttribArray(program.positionAttribute);
-		glVertexAttribPointer(program.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-		glEnableVertexAttribArray(program.texCoordAttribute);
-
-		glBindTexture(GL_TEXTURE_2D, ctgTexture);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-
-		glDisableVertexAttribArray(program.positionAttribute);
-		glDisableVertexAttribArray(program.texCoordAttribute);
-
-		//Model 2
-
-		modelMatrix2 = glm::translate(modelMatrix2, glm::vec3(player_x, 0.0f, 0.0f)); 
-		program2.SetModelMatrix(modelMatrix2); 
-		glVertexAttribPointer(program2.positionAttribute, 2, GL_FLOAT, false, 0, vertices); 
-		glEnableVertexAttribArray(program2.positionAttribute); 
-		glVertexAttribPointer(program2.texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords);
-		glEnableVertexAttribArray(program2.texCoordAttribute);
-
-		glBindTexture(GL_TEXTURE_2D, diceTexture); 
-		glDrawArrays(GL_TRIANGLES, 0, 6); 				
-
-		glDisableVertexAttribArray(program2.positionAttribute); 											
-		glDisableVertexAttribArray(program2.texCoordAttribute); 
-
-		//Tick timer
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
 		float deltaTime = ticks - lastTicks;
 		lastTicks = ticks;
 
-		rotate_z += 45.0f * deltaTime;	//Spinning controller
-		player_x += 1.0f * deltaTime; //X-Movement controller
+		const Uint8* keys = SDL_GetKeyboardState(NULL);
+
+		if (keys[SDL_SCANCODE_W]) {
+			rightBarPosY += 0.001;
+		}
+		if (keys[SDL_SCANCODE_S]) {
+			rightBarPosY -= 0.001;
+		}
+		if (keys[SDL_SCANCODE_UP]) {
+			leftBarPosY += 0.001;
+		}
+		if (keys[SDL_SCANCODE_DOWN]) {
+			leftBarPosY -= 0.001;
+		}
+
+		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, leftBarPosY, 0.0f));
+		program.SetModelMatrix(modelLeftMatrix);
+		program.SetProjectionMatrix(projectionMatrix);
+		program.SetViewMatrix(viewMatrix);
+
+		glUseProgram(program.programID);
+
+
+		float leftBar[] = { 3.5f, -0.5f, 3.4f, 0.5f, 3.5f, 0.5f, 3.4f, 0.5f, 3.5f, -0.5f, 3.4f, -0.5f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+
+		modelRightMatrix = glm::translate(modelRightMatrix, glm::vec3(0.0f, rightBarPosY, 0.0f));
+		program.SetModelMatrix(modelRightMatrix);
+
+		float rightBar[] = { -3.5f, -0.5f, -3.4f, 0.5f, -3.5f, 0.5f, -3.4f, 0.5f, -3.5f, -0.5f, -3.4f, -0.5f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, rightBar);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+
+
+
+		if (ballPosY <= -0.0135 || ballPosY >= 0.0135)
+		{
+			ballSpeed = -ballSpeed;
+			ballPosX = 0.0f;
+		}
+
+		ballPosX += ballSpeed;
+		ballPosY += ballSpeed;
+
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(ballPosX, ballPosY, 0.0f));
+		program.SetModelMatrix(modelMatrix);
+
+		float ball[] = { -0.1f, -0.1f, 0.1f, 0.1f, -0.1f, 0.1f, 0.1f, 0.1f, -0.1f, -0.1f, 0.1f, -0.1f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, ball);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glDisableVertexAttribArray(program.positionAttribute);
+
 
 		SDL_GL_SwapWindow(displayWindow);
 	}
 
-	SDL_Quit();
+	Shutdown();
 	return 0;
 }
