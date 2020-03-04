@@ -22,8 +22,8 @@ float lastTicks = 0.0f;
 SDL_Window* displayWindow;
 bool gameIsRunning = true;
 
-float leftBarPosY = 0.0f;
-float rightBarPosY = 0.0f;
+float rightPosY = 0.0f;
+float leftPosY = 0.0f;
 
 float ballPosX = 0.0f;
 float ballPosY = 0.0f;
@@ -77,6 +77,7 @@ void ProcessInput() {
 void Update() { }
 
 void Render() {
+
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		float ticks = (float)SDL_GetTicks() / 1000.0f;
@@ -185,21 +186,21 @@ int main(int argc, char* argv[]) {
 
 		const Uint8* keys = SDL_GetKeyboardState(NULL);
 
-		if (keys[SDL_SCANCODE_W] && rightBarPosY <= 3.25f) {
-			if (rightBarPosY <= 3.25f) rightBarPosY += 0.1f;
+		if (keys[SDL_SCANCODE_W] && leftPosY <= 3.25f) {
+			if (leftPosY <= 3.25f) leftPosY += 0.1f;
 		}
-		if (keys[SDL_SCANCODE_S] && rightBarPosY >= -3.25f) {
-			if (rightBarPosY >= -3.25f) rightBarPosY -= 0.1f;
+		if (keys[SDL_SCANCODE_S] && leftPosY >= -3.25f) {
+			if (leftPosY >= -3.25f) leftPosY -= 0.1f;
 		}
-		if (keys[SDL_SCANCODE_UP] && leftBarPosY <= 3.25f) {
-			if (leftBarPosY <= 3.25f) leftBarPosY += 0.1f;
+		if (keys[SDL_SCANCODE_UP] && rightPosY <= 3.25f) {
+			if (rightPosY <= 3.25f) rightPosY += 0.1f;
 		}
-		if (keys[SDL_SCANCODE_DOWN] && leftBarPosY >= -3.25f) {
-			if (leftBarPosY >= -3.25f) leftBarPosY -= 0.1f;
+		if (keys[SDL_SCANCODE_DOWN] && rightPosY >= -3.25f) {
+			if (rightPosY >= -3.25f) rightPosY -= 0.1f;
 		}
 
 		modelLeftMatrix = glm::mat4(1.0f);
-		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, leftBarPosY, 0.0f));
+		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, rightPosY, 0.0f));
 		program.SetModelMatrix(modelLeftMatrix);
 		program.SetProjectionMatrix(projectionMatrix);
 		program.SetViewMatrix(viewMatrix);
@@ -207,18 +208,18 @@ int main(int argc, char* argv[]) {
 		glUseProgram(program.programID);
 
 
-		float leftBar[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
+		float right[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, right);
 		glEnableVertexAttribArray(program.positionAttribute);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(program.positionAttribute);
 
 		modelRightMatrix = glm::mat4(1.0f);
-		modelRightMatrix = glm::translate(modelRightMatrix, glm::vec3(0.0f, rightBarPosY, 0.0f));
+		modelRightMatrix = glm::translate(modelRightMatrix, glm::vec3(0.0f, leftPosY, 0.0f));
 		program.SetModelMatrix(modelRightMatrix);
 
-		float rightBar[] = { -4.0f, -1.0f, -3.9f, 0.0f, -4.0f, 0.0f, -3.9f, 0.0f, -4.0f, -1.0f, -3.9f, -1.0f };
-		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, rightBar);
+		float left[] = { -4.0f, -1.0f, -3.9f, 0.0f, -4.0f, 0.0f, -3.9f, 0.0f, -4.0f, -1.0f, -3.9f, -1.0f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, left);
 		glEnableVertexAttribArray(program.positionAttribute);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(program.positionAttribute);
@@ -231,7 +232,7 @@ int main(int argc, char* argv[]) {
 		
 		if ((ballPosX >= 3.8f))
 		{
-			if ((ballPosY >= leftBarPosY + 0.5f) || (ballPosY <= leftBarPosY - 0.5f))
+			if ((ballPosY >= rightPosY + 0.75f) || (ballPosY <= rightPosY - 0.75f))
 			{
 				ballSpeedX = 0.0f;
 				ballSpeedY = 0.0f;
@@ -244,7 +245,7 @@ int main(int argc, char* argv[]) {
 
 		if (ballPosX <= -3.8f)
 		{
-			if ((ballPosY >= rightBarPosY + 0.5f) || (ballPosY <= rightBarPosY - 0.5f))
+			if ((ballPosY >= leftPosY + 0.75f) || (ballPosY <= leftPosY - 0.75f))
 			{
 				ballSpeedX = 0.0f;
 				ballSpeedY = 0.0f;
