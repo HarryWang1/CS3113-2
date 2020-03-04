@@ -15,7 +15,7 @@
 #include "stb_image.h"
 
 ShaderProgram program;
-glm::mat4 viewMatrix, modelMatrix, projectionMatrix, modelLeftMatrix, modelRightMatrix;
+glm::mat4 viewMatrix, modelMatrix, projectionMatrix, rightMatrix, leftMatrix;
 
 SDL_Window* displayWindow;
 bool gameIsRunning = true;
@@ -48,10 +48,9 @@ void Initialize() {
 
 	viewMatrix = glm::mat4(1.0f);
 	modelMatrix = glm::mat4(1.0f);
-	modelLeftMatrix = glm::mat4(1.0f);
-	modelRightMatrix = glm::mat4(1.0f);
+	rightMatrix = glm::mat4(1.0f);
+	leftMatrix = glm::mat4(1.0f);
 	projectionMatrix = glm::ortho(-4.0f, 4.0f, -3.75f, 3.75f, -1.0f, 1.0f);
-
 
 	program.SetProjectionMatrix(projectionMatrix);
 	program.SetViewMatrix(viewMatrix);
@@ -75,12 +74,12 @@ void Update() { }
 void Render() {
 
 		glClear(GL_COLOR_BUFFER_BIT);
+		program.SetProjectionMatrix(projectionMatrix);
+		program.SetViewMatrix(viewMatrix);
 
 		modelLeftMatrix = glm::mat4(1.0f);
 		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, leftBarPosY, 0.0f));
 		program.SetModelMatrix(modelLeftMatrix);
-		program.SetProjectionMatrix(projectionMatrix);
-		program.SetViewMatrix(viewMatrix);
 
 		float leftBar[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
@@ -165,27 +164,34 @@ int main(int argc, char* argv[]) {
 		//Render();
 
 		glClear(GL_COLOR_BUFFER_BIT);
+		program.SetProjectionMatrix(projectionMatrix);
+		program.SetViewMatrix(viewMatrix);
 
+
+		// Keyboard Controller
 		const Uint8* keys = SDL_GetKeyboardState(NULL);
 
 		if (keys[SDL_SCANCODE_W] && leftPosY <= 3.25f) {
-			if (leftPosY <= 3.25f) leftPosY += 0.1f;
+			leftPosY += 0.1f;
 		}
 		if (keys[SDL_SCANCODE_S] && leftPosY >= -3.25f) {
-			if (leftPosY >= -3.25f) leftPosY -= 0.1f;
+			leftPosY -= 0.1f;
 		}
 		if (keys[SDL_SCANCODE_UP] && rightPosY <= 3.25f) {
-			if (rightPosY <= 3.25f) rightPosY += 0.1f;
+			rightPosY += 0.1f;
 		}
 		if (keys[SDL_SCANCODE_DOWN] && rightPosY >= -3.25f) {
-			if (rightPosY >= -3.25f) rightPosY -= 0.1f;
+			rightPosY -= 0.1f;
 		}
 
-		modelLeftMatrix = glm::mat4(1.0f);
-		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, rightPosY, 0.0f));
-		program.SetModelMatrix(modelLeftMatrix);
-		program.SetProjectionMatrix(projectionMatrix);
-		program.SetViewMatrix(viewMatrix);
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		// Right Bar Controller
+		rightMatrix = glm::mat4(1.0f);
+		rightMatrix = glm::translate(rightMatrix, glm::vec3(0.0f, rightPosY, 0.0f));
+		program.SetModelMatrix(rightMatrix);
 
 		float right[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, right);
@@ -193,9 +199,14 @@ int main(int argc, char* argv[]) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(program.positionAttribute);
 
-		modelRightMatrix = glm::mat4(1.0f);
-		modelRightMatrix = glm::translate(modelRightMatrix, glm::vec3(0.0f, leftPosY, 0.0f));
-		program.SetModelMatrix(modelRightMatrix);
+
+		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+		// Left Bar controller
+		leftMatrix = glm::mat4(1.0f);
+		leftMatrix = glm::translate(leftMatrix, glm::vec3(0.0f, leftPosY, 0.0f));
+		program.SetModelMatrix(leftMatrix);
 
 		float left[] = { -4.0f, -1.0f, -3.9f, 0.0f, -4.0f, 0.0f, -3.9f, 0.0f, -4.0f, -1.0f, -3.9f, -1.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, left);
@@ -203,6 +214,10 @@ int main(int argc, char* argv[]) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(program.positionAttribute);
 
+
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		// Controls for Ball
 
 		if (ballPosY <= -3.6f || ballPosY >= 3.6f)
 		{
