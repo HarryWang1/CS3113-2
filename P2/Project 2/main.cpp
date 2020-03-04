@@ -17,8 +17,6 @@
 ShaderProgram program;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix, modelLeftMatrix, modelRightMatrix;
 
-float lastTicks = 0.0f;
-
 SDL_Window* displayWindow;
 bool gameIsRunning = true;
 
@@ -78,16 +76,11 @@ void Render() {
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		float ticks = (float)SDL_GetTicks() / 1000.0f;
-		float deltaTime = ticks - lastTicks;
-		lastTicks = ticks;
-
 		modelLeftMatrix = glm::mat4(1.0f);
 		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, leftBarPosY, 0.0f));
 		program.SetModelMatrix(modelLeftMatrix);
 		program.SetProjectionMatrix(projectionMatrix);
 		program.SetViewMatrix(viewMatrix);
-
 
 		float leftBar[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
@@ -104,7 +97,6 @@ void Render() {
 		glEnableVertexAttribArray(program.positionAttribute);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDisableVertexAttribArray(program.positionAttribute);
-
 
 		if (ballPosY <= -3.6f || ballPosY >= 3.6f)
 		{
@@ -151,8 +143,6 @@ void Render() {
 
 		glDisableVertexAttribArray(program.positionAttribute);
 }
-
-
 */
 
 void Shutdown() {
@@ -163,16 +153,16 @@ int main(int argc, char* argv[]) {
 	Initialize();
 
 	while (gameIsRunning) {
-		//ProcessInput();
-		//Update();
-		//Render();
-
 		SDL_Event event;
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				gameIsRunning = false;
 			}
 		}
+
+		//ProcessInput();
+		//Update();
+		//Render();
 
 		glClear(GL_COLOR_BUFFER_BIT);
 
@@ -196,7 +186,6 @@ int main(int argc, char* argv[]) {
 		program.SetModelMatrix(modelLeftMatrix);
 		program.SetProjectionMatrix(projectionMatrix);
 		program.SetViewMatrix(viewMatrix);
-
 
 		float right[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, right);
