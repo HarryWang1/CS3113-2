@@ -28,8 +28,8 @@ float leftPosY = 0.0f;
 float ballPosX = 0.0f;
 float ballPosY = 0.0f;
 
-float ballSpeedX = 0.05f;
-float ballSpeedY = 0.05f;
+float ballSpeedX = 0.04f;
+float ballSpeedY = 0.04f;
 
 
 void Initialize() {
