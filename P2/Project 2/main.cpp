@@ -77,33 +77,82 @@ void ProcessInput() {
 void Update() { }
 
 void Render() {
-	glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT);
 
-	float leftBar[] = { 3.5f, -0.5f, 3.4f, 0.5f, 3.5f, 0.5f, 3.4f, 0.5f, 3.5f, -0.5f, 3.4f, -0.5f };
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
+		float ticks = (float)SDL_GetTicks() / 1000.0f;
+		float deltaTime = ticks - lastTicks;
+		lastTicks = ticks;
 
+		modelLeftMatrix = glm::mat4(1.0f);
+		modelLeftMatrix = glm::translate(modelLeftMatrix, glm::vec3(0.0f, leftBarPosY, 0.0f));
+		program.SetModelMatrix(modelLeftMatrix);
+		program.SetProjectionMatrix(projectionMatrix);
+		program.SetViewMatrix(viewMatrix);
 
-	program.SetModelMatrix(modelMatrix);
-
-	float rightBar[] = { -3.5f, -0.5f, -3.4f, 0.5f, -3.5f, 0.5f, -3.4f, 0.5f, -3.5f, -0.5f, -3.4f, -0.5f };
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, rightBar);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-	program.SetModelMatrix(modelMatrix);
-
-	float ball[] = { -0.1f, -0.1f, 0.1f, 0.1f, -0.1f, 0.1f, 0.1f, 0.1f, -0.1f, -0.1f, 0.1f, -0.1f };
-	glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, ball);
-	glEnableVertexAttribArray(program.positionAttribute);
-	glDrawArrays(GL_TRIANGLES, 0, 6);
-
-	glDisableVertexAttribArray(program.positionAttribute);
+		glUseProgram(program.programID);
 
 
-	SDL_GL_SwapWindow(displayWindow);
+		float leftBar[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+
+		modelRightMatrix = glm::mat4(1.0f);
+		modelRightMatrix = glm::translate(modelRightMatrix, glm::vec3(0.0f, rightBarPosY, 0.0f));
+		program.SetModelMatrix(modelRightMatrix);
+
+		float rightBar[] = { -4.0f, -1.0f, -3.9f, 0.0f, -4.0f, 0.0f, -3.9f, 0.0f, -4.0f, -1.0f, -3.9f, -1.0f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, rightBar);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDisableVertexAttribArray(program.positionAttribute);
+
+
+		if (ballPosY <= -3.6f || ballPosY >= 3.6f)
+		{
+			ballSpeedY = -ballSpeedY;
+		}
+
+		if ((ballPosX >= 3.8f))
+		{
+			if ((ballPosY >= leftBarPosY + 0.5f) || (ballPosY <= leftBarPosY - 0.5f))
+			{
+				ballSpeedX = 0.0f;
+				ballSpeedY = 0.0f;
+			}
+			else
+			{
+				ballSpeedX = -ballSpeedX;
+			}
+		}
+
+		if (ballPosX <= -3.8f)
+		{
+			if ((ballPosY >= rightBarPosY + 0.5f) || (ballPosY <= rightBarPosY - 0.5f))
+			{
+				ballSpeedX = 0.0f;
+				ballSpeedY = 0.0f;
+			}
+			else
+			{
+				ballSpeedX = -ballSpeedX;
+			}
+		}
+
+		ballPosX += ballSpeedX;
+		ballPosY += ballSpeedY;
+
+		modelMatrix = glm::mat4(1.0f);
+		modelMatrix = glm::translate(modelMatrix, glm::vec3(ballPosX, ballPosY, 0.0f));
+		program.SetModelMatrix(modelMatrix);
+
+		float ball[] = { -0.1f, -0.1f, 0.1f, 0.1f, -0.1f, 0.1f, 0.1f, 0.1f, -0.1f, -0.1f, 0.1f, -0.1f };
+		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, ball);
+		glEnableVertexAttribArray(program.positionAttribute);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		glDisableVertexAttribArray(program.positionAttribute);
 }
 
 
@@ -158,7 +207,7 @@ int main(int argc, char* argv[]) {
 		glUseProgram(program.programID);
 
 
-		float leftBar[] = { 3.5f, -0.5f, 3.4f, 0.5f, 3.5f, 0.5f, 3.4f, 0.5f, 3.5f, -0.5f, 3.4f, -0.5f };
+		float leftBar[] = { 4.0f, 0.0f, 3.9f, 1.0f, 4.0f, 1.0f, 3.9f, 1.0f, 4.0f, 0.0f, 3.9f, 0.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, leftBar);
 		glEnableVertexAttribArray(program.positionAttribute);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -168,7 +217,7 @@ int main(int argc, char* argv[]) {
 		modelRightMatrix = glm::translate(modelRightMatrix, glm::vec3(0.0f, rightBarPosY, 0.0f));
 		program.SetModelMatrix(modelRightMatrix);
 
-		float rightBar[] = { -3.5f, -0.5f, -3.4f, 0.5f, -3.5f, 0.5f, -3.4f, 0.5f, -3.5f, -0.5f, -3.4f, -0.5f };
+		float rightBar[] = { -4.0f, -1.0f, -3.9f, 0.0f, -4.0f, 0.0f, -3.9f, 0.0f, -4.0f, -1.0f, -3.9f, -1.0f };
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, rightBar);
 		glEnableVertexAttribArray(program.positionAttribute);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -178,25 +227,32 @@ int main(int argc, char* argv[]) {
 		if (ballPosY <= -3.6f || ballPosY >= 3.6f)
 		{
 			ballSpeedY = -ballSpeedY;
+		}
+		
+		if ((ballPosX >= 3.8f))
+		{
+			if ((ballPosY >= leftBarPosY + 0.5f) || (ballPosY <= leftBarPosY - 0.5f))
+			{
+				ballSpeedX = 0.0f;
+				ballSpeedY = 0.0f;
+			}
+			else
+			{
+				ballSpeedX = -ballSpeedX;
+			}
+		}
 
-		}
-		else if ((ballPosX >= 3.3f) && (ballPosY >= leftBarPosY) && (ballPosY <= leftBarPosY + 100.0f))
+		if (ballPosX <= -3.8f)
 		{
-			ballSpeedX = -ballSpeedX;
-		}
-		else if ((ballPosX <= -3.3f) && (ballPosY >= rightBarPosY) && (ballPosY <= rightBarPosY + 100.0f))
-		{
-			ballSpeedX = -ballSpeedX;
-		}
-		else if (ballPosX >= 3.5f)
-		{
-			ballSpeedY = 0.0f;
-			ballSpeedX = 0.0f;
-		}
-		else if (ballPosX <= -3.5f)
-		{
-			ballSpeedY = 0.0f;
-			ballSpeedX = 0.0f;
+			if ((ballPosY >= rightBarPosY + 0.5f) || (ballPosY <= rightBarPosY - 0.5f))
+			{
+				ballSpeedX = 0.0f;
+				ballSpeedY = 0.0f;
+			}
+			else
+			{
+				ballSpeedX = -ballSpeedX;
+			}
 		}
 
 		ballPosX += ballSpeedX;
@@ -212,6 +268,8 @@ int main(int argc, char* argv[]) {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		glDisableVertexAttribArray(program.positionAttribute);
+
+		//if (ballSpeedX == 0) glClear(GL_COLOR_BUFFER_BIT);
 
 		SDL_GL_SwapWindow(displayWindow);
 	}
