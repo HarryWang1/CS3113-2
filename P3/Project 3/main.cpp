@@ -91,7 +91,7 @@ void Initialize() {
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	GLuint font = LoadTexture("font.png");
+	GLuint font = LoadTexture("textSheet.png");
 }
 
 
@@ -102,8 +102,8 @@ void Shutdown() {
 
 void DrawText(ShaderProgram* program, GLuint fontTextureID, std::string text, float size, float spacing, glm::vec3 position)
 {
-	float width = 1.0f / 16.0f;
-	float height = 1.0f / 16.0f;
+	float width = 1.0f / 15.0f;
+	float height = 1.0f / 15.0f;
 
 	std::vector<float> vertices;
 	std::vector<float> texCoords;
@@ -281,8 +281,8 @@ int main(int argc, char* argv[]) {
 
 		glDisableVertexAttribArray(program.positionAttribute);
 
-		//GLuint font = LoadTexture("textSheet.png");
-		DrawText(&program, font, "Victory", 0.1f, 0.1f, glm::vec3(1.0f, 1.0f, 0.0f));
+		GLuint font = LoadTexture("textSheet.png");
+		DrawText(&program, font, "Victory", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
 
 		SDL_GL_SwapWindow(displayWindow);
 	}
