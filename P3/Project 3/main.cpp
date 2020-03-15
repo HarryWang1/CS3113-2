@@ -37,6 +37,62 @@ float landerAccelY = 0.0f;
 
 float ballRotateAngle = 0.0f;
 
+void DrawText(ShaderProgram* program, GLuint fontTextureID, std::string text, float size, float spacing, glm::vec3 position)
+{
+	float width = 1.0f / 16.0f;
+	float height = 1.0f / 16.0f;
+
+	std::vector<float> vertices;
+	std::vector<float> texCoords;
+
+	for (int i = 0; i < text.size(); i++)
+	{
+		int index = (int)text[i];
+		float offset = (size + spacing) * i;
+
+		float u = (float)(index % 16) / 16.0f;
+		float v = (float)(index / 16) / 16.0f;
+
+		vertices.insert(vertices.end(),
+			{
+				offset + (-0.5f * size), 0.5f * size,
+				offset + (-0.5f * size), -0.5f * size,
+				offset + (0.5f * size), 0.5f * size,
+				offset + (0.5f * size), -0.5f * size,
+				offset + (0.5f * size), 0.5f * size,
+				offset + (-0.5f * size), -0.5f * size
+			});
+
+		texCoords.insert(texCoords.end(),
+			{
+				u, v,
+				u, v + height,
+				u + width, v,
+				u + width, v + height,
+				u + width, v,
+				u, v + height
+			});
+	}
+
+	glm::mat4 modelMatrix = glm::mat4(1.0f);
+	modelMatrix = glm::translate(modelMatrix, position);
+	program->SetModelMatrix(modelMatrix);
+
+	glUseProgram(program->programID);
+
+	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vertices.data());
+	glEnableVertexAttribArray(program->positionAttribute);
+
+	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords.data());
+	glEnableVertexAttribArray(program->texCoordAttribute);
+
+	glBindTexture(GL_TEXTURE_2D, fontTextureID);
+	glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
+
+	glDisableVertexAttribArray(program->positionAttribute);
+	glDisableVertexAttribArray(program->texCoordAttribute);
+}
+
 GLuint LoadTexture(const char* filePath)
 {
 	int w, h, n;
@@ -87,76 +143,18 @@ void Initialize() {
 
 	program.SetProjectionMatrix(projectionMatrix);
 	program.SetViewMatrix(viewMatrix);
-	program.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
-
-	program2.SetProjectionMatrix(projectionMatrix);
-	program2.SetViewMatrix(viewMatrix);
+	//program.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-	GLuint font = LoadTexture("textSheet.png");
+	font = LoadTexture("font.png");
+
+	glUseProgram(program.programID);
 }
 
 
 void Shutdown() {
 	SDL_Quit();
-}
-
-
-void DrawText(ShaderProgram* program, GLuint fontTextureID, std::string text, float size, float spacing, glm::vec3 position)
-{
-	float width = 1.0f / 15.0f;
-	float height = 1.0f / 15.0f;
-
-	std::vector<float> vertices;
-	std::vector<float> texCoords;
-
-	for (int i = 0; i < text.size(); i++)
-	{
-		int index = (int)text[i];
-		float offset = (size + spacing) * i;
-
-		float u = (float)(index % 16) / 16.0f;
-		float v = (float)(index / 16) / 16.0f;
-
-		vertices.insert(vertices.end(),
-			{
-				offset + (-0.5f * size), 0.5f * size,
-				offset + (-0.5f * size), -0.5f * size,
-				offset + (0.5f * size), 0.5f * size,
-				offset + (0.5f * size), -0.5f * size,
-				offset + (0.5f * size), 0.5f * size,
-				offset + (-0.5f * size), -0.5f * size
-			});
-
-		texCoords.insert(texCoords.end(),
-			{
-				u, v,
-				u, v + height,
-				u + width, v,
-				u + width, v + height,
-				u + width, v,
-				u, v + height
-			});
-	}
-
-	glm::mat4 modelMatrix = glm::mat4(1.0f);
-	modelMatrix = glm::translate(modelMatrix, position);
-	program->SetModelMatrix(modelMatrix);
-
-	glUseProgram(program->programID);
-	
-	glVertexAttribPointer(program->positionAttribute, 2, GL_FLOAT, false, 0, vertices.data());
-	glEnableVertexAttribArray(program->positionAttribute);
-
-	glVertexAttribPointer(program->texCoordAttribute, 2, GL_FLOAT, false, 0, texCoords.data());
-	glEnableVertexAttribArray(program->texCoordAttribute);
-
-	glBindTexture(GL_TEXTURE_2D, fontTextureID);
-	glDrawArrays(GL_TRIANGLES, 0, (int)(text.size() * 6));
-
-	glDisableVertexAttribArray(program->positionAttribute);
-	glDisableVertexAttribArray(program->texCoordAttribute);
 }
 
 int main(int argc, char* argv[]) {
@@ -185,11 +183,11 @@ int main(int argc, char* argv[]) {
 		const Uint8* keys = SDL_GetKeyboardState(NULL);
 
 		if (keys[SDL_SCANCODE_LEFT]) {
-			landerAccelX += 0.0000005f;
+			landerAccelX = 0.00005f;
 			ballRotateAngle -= 0.25f;
 		}
 		if (keys[SDL_SCANCODE_RIGHT]) {
-			landerAccelX -= 0.0000005f;
+			landerAccelX = -0.00005f;
 			ballRotateAngle += 0.25f;
 		}
 
@@ -203,24 +201,30 @@ int main(int argc, char* argv[]) {
 		program.SetModelMatrix(terrainMatrix);
 
 		float terrain[] = { -4.5f, -4.0f, 
-							-2.5f, -1.0f,
+							-4.5f, -1.0f,
 
-							-2.5f, -1.0f,
+							-4.5f, -1.0f,
+							-0.5f, -1.0f,
+
+							-0.5f, -1.0f,
 							-0.5f, -3.0f,
 
-							-0.5f, -3.0f,
+							-0.5f, -3.0f, // TARGET LINES
 							0.0f, -3.0f,
 
-							0.0f, -3.0f,
+							-0.5f, -3.1f,
+							0.0f, -3.1f,
+
+							0.0f, -3.0f, 
 							0.0f, -2.0f,
 
-							0.0f, -2.0f,  // TARGET LINES
+							0.0f, -2.0f, 
 							1.0f, -2.0f,
 				
 							1.0f, -2.0f, 
-							2.0f, -3.0f,
+							1.0f, -1.0f,
 
-							2.0f, -3.0f,
+							1.0f, -1.0f,
 							3.0f, -1.0f,
 
 							3.0f, -1.0f,
@@ -233,7 +237,7 @@ int main(int argc, char* argv[]) {
 
 		glVertexAttribPointer(program.positionAttribute, 2, GL_FLOAT, false, 0, terrain);
 		glEnableVertexAttribArray(program.positionAttribute);
-		glDrawArrays(GL_LINES, 0, 18);
+		glDrawArrays(GL_LINES, 0, 22);
 		glDisableVertexAttribArray(program.positionAttribute);
 
 
@@ -252,14 +256,94 @@ int main(int argc, char* argv[]) {
 		landerPosX += landerSpeedX;
 		landerPosY -= landerSpeedY;
 
-		modelMatrix = glm::mat4(1.0f);
-		modelMatrix = glm::translate(modelMatrix, glm::vec3(landerPosX, landerPosY, 0.0f)); 
+		if (landerPosX >= 4.5f || landerPosX <= -4.5f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
 
-		modelMatrix = glm::rotate(modelMatrix, 
-										glm::radians(ballRotateAngle),
-										glm::vec3(0.0f, 0.0f, 1.0f));
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX >= 3.0f && landerPosX <= 4.5f && landerPosY == 1.5f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
 
-		program.SetModelMatrix(modelMatrix);
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX == 3.0f && landerPosY <= 1.5f && landerPosY >= -1.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX <= 3.0f && landerPosX >= 1.0f && landerPosY == -1.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX == 1.0f && landerPosY >= -2.0f && landerPosY <= -1.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX <= 1.0f && landerPosX >= 0.0f && landerPosY == -2.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX == 0.0f && landerPosY >= -3.0f && landerPosY <= -2.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX <= 0.0f && landerPosX >= -0.5f && landerPosY == -3.0f) // TARGET LINE
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Successful", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX == -0.5f && landerPosY >= -3.0f && landerPosY <= -1.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX >= -4.5f && landerPosX <= -0.5f && landerPosY == -1.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else if (landerPosX == -4.5f && landerPosY >= -4.0f && landerPosY <= -1.0f)
+		{
+			landerSpeedX = 0;
+			landerSpeedY = 0;
+
+			DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		}
+		else
+		{
+			modelMatrix = glm::mat4(1.0f);
+			modelMatrix = glm::translate(modelMatrix, glm::vec3(landerPosX, landerPosY, 0.0f));
+
+			modelMatrix = glm::rotate(modelMatrix,
+				glm::radians(ballRotateAngle),
+				glm::vec3(0.0f, 0.0f, 1.0f));
+
+			program.SetModelMatrix(modelMatrix);
+		}
 
 		float lander[] = { 
 							-0.15f, -0.15f, 
@@ -284,8 +368,7 @@ int main(int argc, char* argv[]) {
 
 		glDisableVertexAttribArray(program.positionAttribute);
 
-		GLuint font = LoadTexture("textSheet.png");
-		DrawText(&program, font, "Victory", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+		DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
 
 		SDL_GL_SwapWindow(displayWindow);
 	}
