@@ -15,7 +15,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-ShaderProgram program;
+ShaderProgram program, program2;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix, terrainMatrix, leftMatrix;
 
 GLuint font;
@@ -77,7 +77,7 @@ void Initialize() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	program.Load("shaders/vertex.glsl", "shaders/fragment.glsl");
+	program.Load("shaders/vertex_textured.glsl", "shaders/fragment_textured.glsl");
 
 	viewMatrix = glm::mat4(1.0f);
 	modelMatrix = glm::mat4(1.0f);
@@ -88,6 +88,9 @@ void Initialize() {
 	program.SetProjectionMatrix(projectionMatrix);
 	program.SetViewMatrix(viewMatrix);
 	program.SetColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+	program2.SetProjectionMatrix(projectionMatrix);
+	program2.SetViewMatrix(viewMatrix);
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
