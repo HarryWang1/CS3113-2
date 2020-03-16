@@ -34,7 +34,6 @@ public:
     glm::vec3 acceleration;
     
     float speed;
-    float accelerationX;
     
     float rotateAngle;
     

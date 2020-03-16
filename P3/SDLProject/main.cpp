@@ -36,9 +36,6 @@ GLuint font;
 SDL_Window* displayWindow;
 bool gameIsRunning = true;
 
-//int cols = 4;
-//int rows = 4;
-
 float lastTicks = 0;
 
 int *animIndices = new int[4] {3, 7, 11, 15};
@@ -179,7 +176,7 @@ void Render()
     if (!state.player->isActive)
     {
         if (!state.player->isWin) DrawText(&program, font, "Mission Failed", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
-        else DrawText(&program, font, "Mission Accomplished", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
+        else DrawText(&program, font, "Mission Successful", 0.5f, -0.25f, glm::vec3(-2.0f, 1.0f, 0.0f));
     }
     
     for (int i = 0; i < ROCK_COUNT; i++)
@@ -190,6 +187,11 @@ void Render()
     state.landing->Render(&program);
     
     state.player->Render(&program);
+    
+    DrawText(&program, font, "Acceleration:" + std::to_string(state.player->acceleration.x), 0.4, -0.25f, glm::vec3(-3.5f, 3.5f, 0.0f));
+    DrawText(&program, font, "Velocity:" + std::to_string(state.player->velocity.x), 0.4, -0.25f, glm::vec3(-3.5f, 3.25f, 0.0f));
+    DrawText(&program, font, "Position X:" + std::to_string(state.player->position.x), 0.4, -0.25f, glm::vec3(-3.5f, 3.0f, 0.0f));
+    DrawText(&program, font, "Position Y:" + std::to_string(state.player->position.y), 0.4, -0.25f, glm::vec3(-3.5f, 2.75f, 0.0f));
 
     SDL_GL_SwapWindow(displayWindow);
 }
@@ -254,7 +256,7 @@ void Initialize() {
     state.player = new Entity();
     state.player->position = glm::vec3(0.0, 2.0, 0.0);
     state.player->movement = glm::vec3(0);
-    state.player->acceleration = glm::vec3(0, -0.5, 0.0);
+    state.player->acceleration = glm::vec3(0, -0.05, 0.0);
     state.player->speed = 1.0f;
     state.player->velocity = glm::vec3(0);
     state.player->textureID = LoadTexture("ctg.png");

@@ -16,7 +16,6 @@ Entity::Entity()
     acceleration = glm::vec3(0);
     
     speed = 0.0;
-    accelerationX = 0;
     rotateAngle = 0;
     
     animCols = 1;
@@ -66,7 +65,6 @@ void Entity::Update(float deltaTime, Entity* rocks, Entity* landing, int rockCou
 {
     if (isActive == false) return;
     
-    //velocity.x = movement.x * speed;
     velocity += acceleration * deltaTime;
     
     position += velocity * deltaTime;
