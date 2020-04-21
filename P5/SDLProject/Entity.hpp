@@ -54,6 +54,8 @@ public:
     int animCols = 0;
     int animRows = 0;
     
+    int lives = 3;
+    
     int enemiesKilled = 0;
     
     float width = 1.0;
@@ -61,6 +63,8 @@ public:
     
     bool isActive = true;
     bool isWin = false;
+    
+    bool killed = false;
     
     bool collidedTop = false;
     bool collidedBottom = false;

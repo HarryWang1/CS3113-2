@@ -194,6 +194,15 @@ void Entity::AIWaitAndGo(Entity* player, Entity* attackObject)
             if (player->position.x < position.x)
             {
                 movement = glm::vec3(-1, 0, 0);
+                
+                CheckCollisionsX(player, 1);
+                
+                if (collidedLeft || collidedRight)
+                {
+                    player->isActive = false;
+                    player->killed = true;
+                    std::cout << "killed" << std::endl;
+                }
             }
             else
             {

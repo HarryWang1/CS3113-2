@@ -24,6 +24,9 @@
 		EA3CB2E8244D4A530089A2E2 /* Level2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA3CB2E6244D4A530089A2E2 /* Level2.cpp */; };
 		EA3CB2EB244D61950089A2E2 /* Level3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA3CB2E9244D61950089A2E2 /* Level3.cpp */; };
 		EA3CB2EE244D61A00089A2E2 /* GameScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA3CB2EC244D61A00089A2E2 /* GameScreen.cpp */; };
+		EA3CB2F0244D6C280089A2E2 /* dungeon8Bit.wav in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA3CB2EF244D6C080089A2E2 /* dungeon8Bit.wav */; };
+		EA3CB2F2244D6CF10089A2E2 /* spell.wav in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA3CB2F1244D6CEE0089A2E2 /* spell.wav */; };
+		EA3CB2F8244E9A100089A2E2 /* Level4.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EA3CB2F6244E9A100089A2E2 /* Level4.cpp */; };
 		EA402A56241F06B100AAD355 /* ctg.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA402A55241F069600AAD355 /* ctg.png */; };
 		EA402A57241F06C000AAD355 /* font.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA402A4E241EFBAD00AAD355 /* font.png */; };
 		EA402A59241F12D600AAD355 /* george_0.png in CopyFiles */ = {isa = PBXBuildFile; fileRef = EA402A58241F12D000AAD355 /* george_0.png */; };
@@ -57,6 +60,8 @@
 				EA030FBD242D64C50049C573 /* playerWizard.png in CopyFiles */,
 				EA030FC0242D799A0049C573 /* flamespinRight.png in CopyFiles */,
 				EA030FC1242D799D0049C573 /* fireballLeft.png in CopyFiles */,
+				EA3CB2F0244D6C280089A2E2 /* dungeon8Bit.wav in CopyFiles */,
+				EA3CB2F2244D6CF10089A2E2 /* spell.wav in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -87,6 +92,10 @@
 		EA3CB2EA244D61950089A2E2 /* Level3.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Level3.hpp; sourceTree = "<group>"; };
 		EA3CB2EC244D61A00089A2E2 /* GameScreen.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GameScreen.cpp; sourceTree = "<group>"; };
 		EA3CB2ED244D61A00089A2E2 /* GameScreen.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = GameScreen.hpp; sourceTree = "<group>"; };
+		EA3CB2EF244D6C080089A2E2 /* dungeon8Bit.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = dungeon8Bit.wav; sourceTree = "<group>"; };
+		EA3CB2F1244D6CEE0089A2E2 /* spell.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = spell.wav; sourceTree = "<group>"; };
+		EA3CB2F6244E9A100089A2E2 /* Level4.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Level4.cpp; sourceTree = "<group>"; };
+		EA3CB2F7244E9A100089A2E2 /* Level4.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Level4.hpp; sourceTree = "<group>"; };
 		EA402A4E241EFBAD00AAD355 /* font.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = font.png; sourceTree = "<group>"; };
 		EA402A55241F069600AAD355 /* ctg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ctg.png; sourceTree = "<group>"; };
 		EA402A58241F12D000AAD355 /* george_0.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = george_0.png; sourceTree = "<group>"; };
@@ -141,6 +150,8 @@
 		DBDF1B512323DE3F007CECB1 /* SDLProject */ = {
 			isa = PBXGroup;
 			children = (
+				EA3CB2F1244D6CEE0089A2E2 /* spell.wav */,
+				EA3CB2EF244D6C080089A2E2 /* dungeon8Bit.wav */,
 				EA030FBF242D79940049C573 /* fireballLeft.png */,
 				EA030FBE242D79940049C573 /* flamespinRight.png */,
 				EA030FB8242D64B10049C573 /* enemyPerson.png */,
@@ -175,6 +186,8 @@
 				EA3CB2EA244D61950089A2E2 /* Level3.hpp */,
 				EA3CB2EC244D61A00089A2E2 /* GameScreen.cpp */,
 				EA3CB2ED244D61A00089A2E2 /* GameScreen.hpp */,
+				EA3CB2F6244E9A100089A2E2 /* Level4.cpp */,
+				EA3CB2F7244E9A100089A2E2 /* Level4.hpp */,
 			);
 			path = SDLProject;
 			sourceTree = "<group>";
@@ -247,6 +260,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EA3CB2F8244E9A100089A2E2 /* Level4.cpp in Sources */,
 				EAC7787E244D33CF00F8CF1E /* Scene.cpp in Sources */,
 				DBDF1B532323DE3F007CECB1 /* main.cpp in Sources */,
 				EA402A5C241F183700AAD355 /* Entity.cpp in Sources */,

@@ -8,14 +8,9 @@
 
 #include "GameScreen.hpp"
 
-#define LEVEL2_ENEMY_COUNT 1
-#define LEVEL2_WIDTH 14
-#define LEVEL2_HEIGHT 8
-
 
 void GameScreen::Initialize()
 {
-    
     state.nextScene = -1;
 }
 
