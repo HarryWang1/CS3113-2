@@ -70,7 +70,7 @@ void Level3::Initialize()
     
     state.enemies->isActive = true;
     
-    state.enemies->textureID = Util::LoadTexture("enemyPerson.png");
+    state.enemies->textureID = Util::LoadTexture("enemyVampire.png");
 }
 
 void Level3::Update(float deltaTime)

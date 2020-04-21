@@ -39,7 +39,7 @@ Mix_Chunk *shootFire;
 GLuint font;
 
 bool inGameScreen = true;
-int lives = 2;
+int lives = 3;
 
 void SwitchToScene(Scene *scene)
 {
@@ -105,8 +105,9 @@ void Render()
     }
     else
     {
-        if (currentScene->state.player->lives == 0) //Draw Game Over
+        if (lives == 0) //Draw Game Over
         {
+            std::cout << "game over" << std::endl;
             Util::DrawText(&program, font, "You Lose", 0.5f, -0.25f, glm::vec3(4.0, -2.0f, 0.0f));
         }
         else if (currentScene->state.player->isWin) //Draw You Win
@@ -117,6 +118,10 @@ void Render()
         {
             Util::DrawText(&program, font, "Press and Hold Spacebar to Fly", 0.5f, -0.25f, glm::vec3(4.0f, -2.0f, 0.0f));
             Util::DrawText(&program, font, "Press 'F' to fire Flamespin", 0.5f, -0.25f, glm::vec3(4.0f, -1.0f, 0.0f));
+            
+            std::string textLives = "Lives: " + std::to_string(lives);
+            
+            Util::DrawText(&program, font, textLives, 0.5f, -0.25f, glm::vec3(4.0f, 0.0f, 0.0f));
         }
         
         currentScene->Render(&program);
@@ -178,7 +183,7 @@ void ProcessInput()
     // Keyboard Controller
     const Uint8* keys = SDL_GetKeyboardState(NULL);
     
-    if (!inGameScreen)
+    if (!inGameScreen && lives > 0 && !currentScene->state.player->isWin)
     {
         if (keys[SDL_SCANCODE_LEFT])
         {

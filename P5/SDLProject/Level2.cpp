@@ -65,7 +65,7 @@ void Level2::Initialize()
     state.enemies->entityType = ENEMY;
     state.enemies->aiType = WALKER;
     state.enemies->aiState = IDLE;
-    state.enemies->position = glm::vec3(13.0, 1.0, 0.0);
+    state.enemies->position = glm::vec3(8.0, 1.0, 0.0);
     state.enemies->acceleration = glm::vec3(0.0, -9.81, 0.0);
     state.enemies->speed = 1.0;
     
