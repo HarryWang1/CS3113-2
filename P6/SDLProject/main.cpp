@@ -20,6 +20,7 @@
 
 #include "GameScreen.hpp"
 #include "Level1.hpp"
+#include "Level2.hpp"
 
 ShaderProgram program;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix, terrainMatrix, leftMatrix;
@@ -36,7 +37,7 @@ Mix_Chunk *shootFire;
 GLuint font;
 
 bool inGameScreen = true;
-int lives = 3;
+int lives = 1;
 
 void SwitchToScene(Scene *scene)
 {
@@ -52,30 +53,28 @@ void Render()
     
     if (inGameScreen)
     {
-        Util::DrawText(&program, font, "Wizard Quest", 0.5f, -0.25f, glm::vec3(-2.0f, 2.0f, 0.0f));
+        Util::DrawText(&program, font, "Dungeon Explorer", 0.5f, -0.25f, glm::vec3(-2.0f, 2.0f, 0.0f));
         Util::DrawText(&program, font, "Press Enter to continue", 0.5f, -0.25f, glm::vec3(-3.0f, 0.0f, 0.0f));
+        Util::DrawText(&program, font, "Press Space to Attack", 0.5f, -0.25f, glm::vec3(-3.0f, -2.0f, 0.0f));
     }
     else
     {
-//        if (lives == 0) //Draw Game Over
-//        {
-//            Util::DrawText(&program, font, "You Lose", 0.5f, -0.25f, glm::vec3(4.0, -2.0f, 0.0f));
-//        }
-//        else if (currentScene->state.player->isWin) //Draw You Win
-//        {
-//            Util::DrawText(&program, font, "You Win", 0.5f, -0.25f, glm::vec3(4.0f, -2.0f, 0.0f));
-//        }
-//        else //If still in game draw instructions
-//        {
-//            Util::DrawText(&program, font, "Press and Hold Spacebar to Fly", 0.5f, -0.25f, glm::vec3(4.0f, -2.0f, 0.0f));
-//            Util::DrawText(&program, font, "Press 'F' to fire Flamespin", 0.5f, -0.25f, glm::vec3(4.0f, -1.0f, 0.0f));
-//            
-//            std::string textLives = "Lives: " + std::to_string(lives);
-//            
-//            Util::DrawText(&program, font, textLives, 0.5f, -0.25f, glm::vec3(4.0f, 0.0f, 0.0f));
-//        }
+        if (lives == 0) //Draw Game Over
+        {
+            Util::DrawText(&program, font, "You Lose", 0.5f, -0.25f, glm::vec3(2.0, -4.0f, 0.0f));
+        }
+        else if (currentScene->state.player->enemiesKilled == 4) //Draw You Win
+        {
+            Util::DrawText(&program, font, "You Win", 0.5f, -0.25f, glm::vec3(2.0f, -4.0f, 0.0f));
+        }
+        else //If still in game draw instructions
+        {
+            std::string textLives = "Lives: " + std::to_string(lives);
+            
+            Util::DrawText(&program, font, textLives, 0.5f, -0.25f, glm::vec3(4.0f, 0.0f, 0.0f));
+        }
         
-        currentScene->Render(&program);
+        if (lives != 0 && currentScene->state.player->enemiesKilled != 4) currentScene->Render(&program);
     }
 
     SDL_GL_SwapWindow(displayWindow);
@@ -104,6 +103,11 @@ void Update()
         {
             currentScene->Reset();
             lives--;
+        }
+        
+        if (currentScene->state.player->enemiesKilled == 4 || lives == 0)
+        {
+            currentScene->Reset();
         }
         
         while (deltaTime >= FIXED_TIMESTEP && currentScene->state.player->isActive) //Checks to make sure player is
@@ -136,34 +140,67 @@ void ProcessInput()
     
     if (!inGameScreen && lives > 0 && !currentScene->state.player->isWin)
     {
-        if (keys[SDL_SCANCODE_LEFT])
+        if (keys[SDL_SCANCODE_LEFT] && !currentScene->state.player->collidedLeft)
         {
+            currentScene->state.player->attackSword = false;
+            
             currentScene->state.player->textureID = Util::LoadTexture("linkMoveLeft.png");
             
-            currentScene->state.player->position.x += -0.05f;
+            currentScene->state.player->direction = "Left";
+            
+            currentScene->state.player->position.x += -currentScene->state.player->velocity.x;
         }
-        if (keys[SDL_SCANCODE_RIGHT])
+        if (keys[SDL_SCANCODE_RIGHT] && !currentScene->state.player->collidedRight)
         {
+            currentScene->state.player->attackSword = false;
+            
             currentScene->state.player->textureID = Util::LoadTexture("linkMoveRight.png");
             
-            currentScene->state.player->position.x += 0.05f;
+            currentScene->state.player->direction = "Right";
+            
+            currentScene->state.player->position.x += currentScene->state.player->velocity.x;
         }
-        if (keys[SDL_SCANCODE_UP])
+        if (keys[SDL_SCANCODE_UP] && !currentScene->state.player->collidedTop)
         {
+            currentScene->state.player->attackSword = false;
+            
             currentScene->state.player->textureID = Util::LoadTexture("linkMoveUp.png");
             
-            currentScene->state.player->position.y += 0.05f;
+            currentScene->state.player->direction = "Up";
+            
+            currentScene->state.player->position.y += currentScene->state.player->velocity.y;
         }
-        if (keys[SDL_SCANCODE_DOWN])
+        if (keys[SDL_SCANCODE_DOWN] && !currentScene->state.player->collidedBottom)
         {
+            currentScene->state.player->attackSword = false;
+            
             currentScene->state.player->textureID = Util::LoadTexture("linkMoveDown.png");
             
-            currentScene->state.player->position.y += -0.05f;
+            currentScene->state.player->direction = "Down";
+            
+            currentScene->state.player->position.y += -currentScene->state.player->velocity.y;
         }
-//        if (keys[SDL_SCANCODE_SPACE]) // Player's Flying ability
-//        {
-//            if (!currentScene->state.player->jump) currentScene->state.player->jump = true;
-//        }
+        if (keys[SDL_SCANCODE_SPACE]) // Player's Flying ability
+        {
+            currentScene->state.player->attackSword = true;
+            
+            if (currentScene->state.player->direction == "Right")
+            {
+                currentScene->state.player->textureID = Util::LoadTexture("linkAttackRight.png");
+            }
+            else if (currentScene->state.player->direction == "Left")
+            {
+                currentScene->state.player->textureID = Util::LoadTexture("linkAttackLeft.png");
+            }
+            else if (currentScene->state.player->direction == "Up")
+            {
+                currentScene->state.player->textureID = Util::LoadTexture("linkAttackUp.png");
+            }
+            else if (currentScene->state.player->direction == "Down")
+            {
+                currentScene->state.player->textureID = Util::LoadTexture("linkAttackDown.png");
+            }
+        }
         if (keys[SDL_SCANCODE_F])
         {
             if (!currentScene->state.player->shootFlamespin)
@@ -190,7 +227,7 @@ void ProcessInput()
 
 void Initialize() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO);
-    displayWindow = SDL_CreateWindow("Platformer!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
+    displayWindow = SDL_CreateWindow("Final Project!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL);
     SDL_GLContext context = SDL_GL_CreateContext(displayWindow);
     SDL_GL_MakeCurrent(displayWindow, context);
     
@@ -222,13 +259,12 @@ void Initialize() {
     font = Util::LoadTexture("font.png");
     
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
-    music = Mix_LoadMUS("dungeon8Bit.wav");
+    music = Mix_LoadMUS("dungeon16Bit.wav");
     Mix_PlayMusic(music, 1);
-    
-    shootFire = Mix_LoadWAV("spell.wav");
     
     //sceneList[0] = new GameScreen();
     sceneList[0] = new Level1();
+    sceneList[1] = new Level2();
     //SwitchToScene(sceneList[1]);
 }
 

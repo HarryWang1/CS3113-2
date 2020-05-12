@@ -59,6 +59,22 @@ void Entity::CheckCollisionsY(Entity* objects, int objectCount) //Checks Y colli
                 velocity.y = 0;
                 collidedBottom = true;
             }
+            
+            if (collidedLeft || collidedRight || collidedTop || collidedBottom)
+            {
+                if (objects->attackSword)
+                {
+                    isActive = false;
+                    killed = true;
+                    objects->enemiesKilled++;
+                }
+                else
+                {
+                    objects->isActive = false;
+                    objects->killed = true;
+                    std::cout << "killed" << std::endl;
+                }
+            }
         }
     }
 }
@@ -88,6 +104,22 @@ void Entity::CheckCollisionsX(Entity* objects, int objectCount) // Check X Colli
                 collidedLeft = true;
                 object->collidedLeft = true; //Used primarily for changing projectiles
             }
+            
+            if (collidedLeft || collidedRight || collidedTop || collidedBottom)
+            {
+                if (objects->attackSword)
+                {
+                    isActive = false;
+                    killed = true;
+                    objects->enemiesKilled++;
+                }
+                else
+                {
+                    objects->isActive = false;
+                    objects->killed = true;
+                    std::cout << "killed" << std::endl;
+                }
+            }
         }
     }
 }
@@ -101,17 +133,15 @@ void Entity::CheckCollisionsX(Map *map)
     float penetration_x = 0;
     float penetration_y = 0;
     
-    if (map->IsSolid(left, &penetration_x, &penetration_y) && velocity.x < 0)
+    if (map->IsSolid(left, &penetration_x, &penetration_y) && -velocity.x < 0)
     {
-        position.x += penetration_x;
-        velocity.x = 0;
+        //position.x += penetration_x;
         collidedLeft = true;
     }
     
     if (map->IsSolid(right, &penetration_x, &penetration_y) && velocity.x > 0)
     {
-        position.x -= penetration_x;
-        velocity.x = 0;
+        //position.x -= penetration_x;
         collidedRight = true;
     }
 }
@@ -132,58 +162,49 @@ void Entity::CheckCollisionsY(Map *map)
     
     if (map->IsSolid(top, &penetration_x, &penetration_y) && velocity.y > 0)
     {
-        position.y -= penetration_y;
-        velocity.y = 0;
+        //position.y -= penetration_y;
         collidedTop = true;
     }
     else if (map->IsSolid(top_left, &penetration_x, &penetration_y) && velocity.y > 0)
     {
-        position.y -= penetration_y;
-        velocity.y = 0;
+        //position.y -= penetration_y;
         collidedTop = true;
     }
     else if (map->IsSolid(top_right, &penetration_x, &penetration_y) && velocity.y > 0)
     {
-        position.y -= penetration_y;
-        velocity.y = 0;
+        //position.y -= penetration_y;
         collidedTop = true;
     }
     
     if (map->IsSolid(bottom, &penetration_x, &penetration_y) && velocity.y < 0)
     {
-        position.y += penetration_y;
-        velocity.y = 0;
+        //position.y += penetration_y;
         collidedBottom = true;
     }
     else if (map->IsSolid(bottom_left, &penetration_x, &penetration_y) && velocity.y < 0)
     {
-        position.y += penetration_y;
-        velocity.y = 0;
+        //position.y += penetration_y;
         collidedBottom = true;
     }
     else if (map->IsSolid(bottom_right, &penetration_x, &penetration_y) && velocity.y < 0)
     {
-        position.y += penetration_y;
-        velocity.y = 0;
+        //position.y += penetration_y;
         collidedBottom = true;
     }
 }
 
 void Entity::AIWaitAndGo(Entity* player, Entity* attackObject)
 {
+    std::cout <<position.x << " " << position.y << " " << player->position.x << " " << player->position.y << " " << glm::distance(position, player->position) << std::endl;
+    
     switch (aiState)
     {
         case IDLE: //All enemies start in IDLE state
-            if (glm::distance(position, player->position) < 6.0f)
+            if (glm::distance(position, player->position) < 10.0)
             {
+                std::cout << "gello" << std::endl;
                 switch (aiType)
                 {
-                    case JUMPER:
-                        aiState = JUMPING;
-                        break;
-                    case WITCH:
-                        aiState = WITCHATTACK;
-                        break;
                     case WALKER:
                         aiState = WALKING;
                         break;
@@ -197,61 +218,27 @@ void Entity::AIWaitAndGo(Entity* player, Entity* attackObject)
                 
                 CheckCollisionsX(player, 1);
                 
-                if (collidedLeft || collidedRight)
+                if (collidedLeft || collidedRight || collidedTop || collidedBottom)
                 {
-                    player->isActive = false;
-                    player->killed = true;
-                    std::cout << "killed" << std::endl;
+                    if (player->attackSword)
+                    {
+                        isActive = false;
+                        killed = true;
+                        player->enemiesKilled++;
+                    }
+                    else
+                    {
+                        player->isActive = false;
+                        player->killed = true;
+                        player->lives--;
+                        std::cout << "killed" << std::endl;
+                    }
                 }
             }
             else
             {
                 movement = glm::vec3(1, 0, 0);
             }
-            break;
-        case JUMPING: //Jumping style enemy
-            if (player->position.x < position.x)
-            {
-                movement = glm::vec3(-1, 0, 0);
-            }
-            else
-            {
-                movement = glm::vec3(1, 0, 0);
-            }
-            
-            if (collidedBottom)
-            {
-                velocity.y += 5.0;
-                
-                collidedBottom = false;
-            }
-            break;
-        case WITCHATTACK: //Witch style enemy
-            if (glm::distance(position, player->position) < 3)
-            {
-                movement = glm::vec3(0);
-                
-                if (!shootFireball)
-                {
-                    shootFireball = true;
-                    
-                    attackObject->isActive = true;
-                    attackObject->position = position;
-                    attackObject->position.x = position.x - width;
-                }
-            }
-            else
-            {
-                if (player->position.x < position.x)
-                {
-                    movement = glm::vec3(-1, 0, 0);
-                }
-                else
-                {
-                    movement = glm::vec3(1, 0, 0);
-                }
-            }
-
             break;
     }
 }
@@ -265,12 +252,6 @@ void Entity::AI(Entity* player, Entity* attackObject)
     {
         case WALKER:
             AIWaitAndGo(player);
-            break;
-        case JUMPER:
-            AIWaitAndGo(player);
-            break;
-        case WITCH:
-            AIWaitAndGo(player, attackObject);
             break;
         default:
             break;
@@ -297,7 +278,6 @@ void Entity::flyingObject(Entity* target, Entity* player, float deltaTime) //Use
         target->isActive = false;
         
         player->enemiesKilled++;
-        player->position.x = -4.0;
     }
 }
 
@@ -306,14 +286,17 @@ void Entity::Update(float deltaTime, Entity* player, Entity* enemyTarget, Entity
     if (isActive == false) return;
     
     // Don't really need to redefine all the time as they die when collided upon
-//    collidedTop = false;
-//    collidedBottom = false;
-//    collidedLeft = false;
-//    collidedRight = false;
+    collidedTop = false;
+    collidedBottom = false;
+    collidedLeft = false;
+    collidedRight = false;
     
     if (entityType == ENEMY)
     {
         AI(player, attackObject);
+        
+        CheckCollisionsY(map);
+        CheckCollisionsX(map);
     }
     else if (entityType == ATTACKOBJECT)
     {
@@ -339,17 +322,16 @@ void Entity::Update(float deltaTime, Entity* player, Entity* enemyTarget, Entity
         }
     }
     
+    movement.x = 0.25;
     velocity.x = movement.x * speed;
     velocity += acceleration * deltaTime;
     
-    position.y += velocity.y * deltaTime;
+    //position.y += velocity.y * deltaTime;
     CheckCollisionsY(map);
-    // CheckCollisionsY(grass, groundCount);
     
-    position.x += velocity.x * deltaTime;
+    //position.x += velocity.x * deltaTime;
     CheckCollisionsX(map);
-    // CheckCollisionsX(grass, groundCount);
-    
+        
     modelMatrix = glm::mat4(1.0f);
     modelMatrix = glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f));
 }

@@ -28,8 +28,8 @@
 
 enum EntityType { PLAYER, PLATFORM, ENEMY, ATTACKOBJECT };
 
-enum AIType { WALKER, JUMPER, WITCH };
-enum AIState { IDLE, WALKING, JUMPING, WITCHATTACK };
+enum AIType { WALKER };
+enum AIState { IDLE, WALKING };
 
 class Entity
 {
@@ -48,6 +48,8 @@ public:
     
     float rotateAngle;
     
+    std::string direction = "Right";
+    
     int *animIndices = NULL;
     int animFrames = 4;
     int animIndex = 0;
@@ -55,7 +57,7 @@ public:
     int animCols = 4;
     int animRows = 4;
     
-    int lives = 3;
+    int lives = 1;
     
     int enemiesKilled = 0;
     
@@ -76,6 +78,8 @@ public:
     
     bool shootFlamespin = false;
     bool shootFireball = false;
+    
+    bool attackSword = false;
     
     GLuint textureID;
     
