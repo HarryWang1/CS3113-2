@@ -76,8 +76,11 @@ void Render()
         
         if (lives != 0 && currentScene->state.player->enemiesKilled != 4)
         {
-            viewMatrix = glm::translate(viewMatrix, glm::vec3(-5, 3.75, 0));
             currentScene->Render(&program);
+        }
+        else 
+        {
+            viewMatrix = glm::translate(viewMatrix, glm::vec3(-5, 3.75, 0));
         }
     }
 
