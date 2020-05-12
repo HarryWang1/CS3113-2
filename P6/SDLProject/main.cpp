@@ -78,10 +78,6 @@ void Render()
         {
             currentScene->Render(&program);
         }
-        else 
-        {
-            viewMatrix = glm::translate(viewMatrix, glm::vec3(-5, 3.75, 0));
-        }
     }
 
     SDL_GL_SwapWindow(displayWindow);
@@ -124,7 +120,12 @@ void Update()
         accumulator = deltaTime;
         
         viewMatrix = glm::mat4(1.0f);
-        if (currentScene->state.player->position.x > 5 || currentScene->state.player->position.x < 12)
+        
+        if (lives == 0 || currentScene->state.player->enemiesKilled == 4)
+        {
+            viewMatrix = glm::translate(viewMatrix, glm::vec3(-5, 3.75, 0));
+        }
+        else if (currentScene->state.player->position.x > 5 || currentScene->state.player->position.x < 12)
         {
             viewMatrix = glm::translate(viewMatrix,
                                         glm::vec3(-currentScene->state.player->position.x, -currentScene->state.player->position.y - 2.0, 0));

@@ -59,22 +59,6 @@ void Entity::CheckCollisionsY(Entity* objects, int objectCount) //Checks Y colli
                 velocity.y = 0;
                 collidedBottom = true;
             }
-            
-            if (collidedLeft || collidedRight || collidedTop || collidedBottom)
-            {
-                if (objects->attackSword)
-                {
-                    isActive = false;
-                    killed = true;
-                    objects->enemiesKilled++;
-                }
-                else
-                {
-                    objects->isActive = false;
-                    objects->killed = true;
-                    std::cout << "killed" << std::endl;
-                }
-            }
         }
     }
 }
@@ -103,22 +87,6 @@ void Entity::CheckCollisionsX(Entity* objects, int objectCount) // Check X Colli
                 velocity.x = 0;
                 collidedLeft = true;
                 object->collidedLeft = true; //Used primarily for changing projectiles
-            }
-            
-            if (collidedLeft || collidedRight || collidedTop || collidedBottom)
-            {
-                if (objects->attackSword)
-                {
-                    isActive = false;
-                    killed = true;
-                    objects->enemiesKilled++;
-                }
-                else
-                {
-                    objects->isActive = false;
-                    objects->killed = true;
-                    std::cout << "killed" << std::endl;
-                }
             }
         }
     }
@@ -222,7 +190,7 @@ void Entity::AIWaitAndGo(Entity* player, Entity* attackObject)
                 velocity.x = 0.25;
             }
             
-            if (player->position.y < position.x)
+            if (player->position.y < position.y)
             {
                 velocity.y = -0.25;
             }
