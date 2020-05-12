@@ -31,12 +31,6 @@ struct GameState
 {
     Map *map;
     Entity *player;
-    Entity *flamespin; //player's projectile
-    Entity *fireball; //enemy witch's projectile
-//    Entity *enemies1;
-//    Entity *enemies2;
-//    Entity *enemies3;
-//    Entity *enemies4;
     Entity *enemies;
     int nextScene;
 };

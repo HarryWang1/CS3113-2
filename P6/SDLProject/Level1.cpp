@@ -50,17 +50,6 @@ void Level1::Initialize()
     state.player->textureID = Util::LoadTexture("linkMoveRight.png");
     
     
-    // Setup Player's Flamespin Projectile Values
-    state.flamespin = new Entity();
-    state.flamespin->isActive = false;
-    state.flamespin->entityType = ATTACKOBJECT;
-    state.flamespin->position = state.player->position;
-    state.flamespin->movement = glm::vec3(1.0, 0.0, 0.0);
-    state.flamespin->velocity = glm::vec3(1.0, 0.0, 0.0);
-    state.flamespin->speed = 2.0f;
-    state.flamespin->textureID = Util::LoadTexture("flamespinRight.png");
-    
-    
     // Setup Platform
     GLuint mapTextureID = Util::LoadTexture("tileset.png");
     state.map = new Map(LEVEL1_WIDTH, LEVEL1_HEIGHT, level1_data, mapTextureID, 1.0f, 11, 1);
@@ -73,6 +62,7 @@ void Level1::Initialize()
     {
         state.enemies[i].entityType = ENEMY;
         state.enemies[i].aiType = WALKER;
+        state.enemies[i].aiState = WALKING;
         state.enemies[i].position = glm::vec3(5.0, -15.0, 0.0);
         state.enemies[i].acceleration = glm::vec3(0.0, 0.0, 0.0);
         state.enemies[i].velocity = glm::vec3(0.0, 0.0, 0.0);
@@ -106,11 +96,6 @@ void Level1::Render(ShaderProgram *program)
     }
     
     state.player->Render(program); //Render Player
-    
-    if (state.flamespin->isActive) //Render Flamespin if triggered
-    {
-        state.flamespin->Render(program);
-    }
 }
 
 void Level1::Reset()

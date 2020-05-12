@@ -20,7 +20,6 @@
 
 #include "GameScreen.hpp"
 #include "Level1.hpp"
-#include "Level2.hpp"
 
 ShaderProgram program;
 glm::mat4 viewMatrix, modelMatrix, projectionMatrix, terrainMatrix, leftMatrix;
@@ -32,7 +31,7 @@ Scene *currentScene;
 Scene *sceneList[4];
 
 Mix_Music *music;
-Mix_Chunk *shootFire;
+Mix_Chunk *attack;
 
 GLuint font;
 
@@ -56,6 +55,7 @@ void Render()
         Util::DrawText(&program, font, "Dungeon Explorer", 0.5f, -0.25f, glm::vec3(-2.0f, 2.0f, 0.0f));
         Util::DrawText(&program, font, "Press Enter to continue", 0.5f, -0.25f, glm::vec3(-3.0f, 0.0f, 0.0f));
         Util::DrawText(&program, font, "Press Space to Attack", 0.5f, -0.25f, glm::vec3(-3.0f, -2.0f, 0.0f));
+        Util::DrawText(&program, font, "Press R to Restart", 0.5f, -0.25f, glm::vec3(-3.0f, -3.0f, 0.0f));
     }
     else
     {
@@ -74,7 +74,11 @@ void Render()
             Util::DrawText(&program, font, textLives, 0.5f, -0.25f, glm::vec3(4.0f, 0.0f, 0.0f));
         }
         
-        if (lives != 0 && currentScene->state.player->enemiesKilled != 4) currentScene->Render(&program);
+        if (lives != 0 && currentScene->state.player->enemiesKilled != 4)
+        {
+            viewMatrix = glm::translate(viewMatrix, glm::vec3(-5, 3.75, 0));
+            currentScene->Render(&program);
+        }
     }
 
     SDL_GL_SwapWindow(displayWindow);
@@ -104,11 +108,7 @@ void Update()
             currentScene->Reset();
             lives--;
         }
-        
-        if (currentScene->state.player->enemiesKilled == 4 || lives == 0)
-        {
-            currentScene->Reset();
-        }
+
         
         while (deltaTime >= FIXED_TIMESTEP && currentScene->state.player->isActive) //Checks to make sure player is
             // still alive to keep enemy movement
@@ -137,6 +137,12 @@ void ProcessInput()
 {
     // Keyboard Controller
     const Uint8* keys = SDL_GetKeyboardState(NULL);
+    
+    if (!inGameScreen && keys[SDL_SCANCODE_R])
+    {
+        currentScene->Reset();
+        lives = 1;
+    }
     
     if (!inGameScreen && lives > 0 && !currentScene->state.player->isWin)
     {
@@ -200,19 +206,8 @@ void ProcessInput()
             {
                 currentScene->state.player->textureID = Util::LoadTexture("linkAttackDown.png");
             }
-        }
-        if (keys[SDL_SCANCODE_F])
-        {
-            if (!currentScene->state.player->shootFlamespin)
-            {
-                currentScene->state.player->shootFlamespin = true;
-                currentScene->state.flamespin->position = currentScene->state.player->position;
-                currentScene->state.flamespin->position.x = currentScene->state.player->position.x + currentScene->state.player->width; //sets flamespin to next
-                //to player instead of on top of
-                currentScene->state.flamespin->isActive = true;
-                
-                Mix_PlayChannel(-1, shootFire, 0);
-            }
+            
+            Mix_PlayChannel(-1, attack, 0);
         }
     }
     else
@@ -262,9 +257,10 @@ void Initialize() {
     music = Mix_LoadMUS("dungeon16Bit.wav");
     Mix_PlayMusic(music, 1);
     
+    attack = Mix_LoadWAV("swing.wav");
+    
     //sceneList[0] = new GameScreen();
     sceneList[0] = new Level1();
-    sceneList[1] = new Level2();
     //SwitchToScene(sceneList[1]);
 }
 

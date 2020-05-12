@@ -195,14 +195,15 @@ void Entity::CheckCollisionsY(Map *map)
 
 void Entity::AIWaitAndGo(Entity* player, Entity* attackObject)
 {
-    std::cout <<position.x << " " << position.y << " " << player->position.x << " " << player->position.y << " " << glm::distance(position, player->position) << std::endl;
+//    std::cout <<position.x << " " << position.y << " " << player->position.x << " " << player->position.y << " " << glm::distance(position, player->position) << " " << (glm::distance(position, player->position) < 10.0) << std::endl;
+//
+    aiState = WALKING;
     
     switch (aiState)
     {
         case IDLE: //All enemies start in IDLE state
-            if (glm::distance(position, player->position) < 10.0)
+            if ((glm::distance(position, player->position) < 10.0)) //Prints true but isn't running unless dead
             {
-                std::cout << "gello" << std::endl;
                 switch (aiType)
                 {
                     case WALKER:
@@ -214,31 +215,42 @@ void Entity::AIWaitAndGo(Entity* player, Entity* attackObject)
         case WALKING: //Walking style enemy
             if (player->position.x < position.x)
             {
-                movement = glm::vec3(-1, 0, 0);
-                
-                CheckCollisionsX(player, 1);
-                
-                if (collidedLeft || collidedRight || collidedTop || collidedBottom)
-                {
-                    if (player->attackSword)
-                    {
-                        isActive = false;
-                        killed = true;
-                        player->enemiesKilled++;
-                    }
-                    else
-                    {
-                        player->isActive = false;
-                        player->killed = true;
-                        player->lives--;
-                        std::cout << "killed" << std::endl;
-                    }
-                }
+                velocity.x = -0.25;
             }
             else
             {
-                movement = glm::vec3(1, 0, 0);
+                velocity.x = 0.25;
             }
+            
+            if (player->position.y < position.x)
+            {
+                velocity.y = -0.25;
+            }
+            else
+            {
+                velocity.y = 0.25;
+            }
+            
+            CheckCollisionsX(player, 1);
+            CheckCollisionsY(player, 1);
+            
+            if (collidedLeft || collidedRight || collidedTop || collidedBottom)
+            {
+                if (player->attackSword)
+                {
+                    isActive = false;
+                    killed = true;
+                    player->enemiesKilled++;
+                }
+                else
+                {
+                    player->isActive = false;
+                    player->killed = true;
+                    player->lives--;
+                    std::cout << "killed" << std::endl;
+                }
+            }
+            
             break;
     }
 }
@@ -255,29 +267,6 @@ void Entity::AI(Entity* player, Entity* attackObject)
             break;
         default:
             break;
-    }
-}
-
-void Entity::flyingObject(Entity* target, Entity* player, float deltaTime) //Used to control projectiles
-{
-    collidedRight = false;
-    collidedLeft = false;
-    
-    velocity.x = movement.x * speed;
-    velocity += acceleration * deltaTime;
-    
-    position.x += velocity.x * deltaTime;
-    CheckCollisionsX(target, 1);
-    
-    modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(position.x, position.y, 0.0f));
-    
-    if (collidedRight || collidedLeft)
-    {
-        isActive = false;
-        target->isActive = false;
-        
-        player->enemiesKilled++;
     }
 }
 
@@ -298,17 +287,6 @@ void Entity::Update(float deltaTime, Entity* player, Entity* enemyTarget, Entity
         CheckCollisionsY(map);
         CheckCollisionsX(map);
     }
-    else if (entityType == ATTACKOBJECT)
-    {
-        flyingObject(enemyTarget, player, deltaTime);
-    }
-    
-    if (jump)
-    {
-        jump = false;
-        
-        velocity.y += jumpPower;
-    }
     
     animTime += deltaTime;
     
@@ -322,14 +300,14 @@ void Entity::Update(float deltaTime, Entity* player, Entity* enemyTarget, Entity
         }
     }
     
-    movement.x = 0.25;
-    velocity.x = movement.x * speed;
+    //movement.x = 0.25;
+    //velocity.x = movement.x * speed;
     velocity += acceleration * deltaTime;
     
-    //position.y += velocity.y * deltaTime;
+    position.y += velocity.y * deltaTime;
     CheckCollisionsY(map);
     
-    //position.x += velocity.x * deltaTime;
+    position.x += velocity.x * deltaTime;
     CheckCollisionsX(map);
         
     modelMatrix = glm::mat4(1.0f);

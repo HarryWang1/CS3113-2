@@ -74,11 +74,6 @@ public:
     bool collidedLeft = false;
     bool collidedRight = false;
     
-    bool jump = false;
-    
-    bool shootFlamespin = false;
-    bool shootFireball = false;
-    
     bool attackSword = false;
     
     GLuint textureID;
@@ -97,9 +92,7 @@ public:
     void CheckCollisionsY(Map *map);
     
     void AI(Entity* player, Entity* attackObject);
-    void AIWaitAndGo(Entity* player, Entity* attackObject = nullptr);
-        
-    void flyingObject(Entity* target, Entity* player, float deltaTime);
+    void AIWaitAndGo(Entity* player, Entity* attackObject = nullptr);        
 };
 
 #endif /* Entity_hpp */
